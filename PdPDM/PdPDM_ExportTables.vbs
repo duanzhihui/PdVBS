@@ -1,16 +1,16 @@
 '******************************************************************************
 '* File       : PdPDM_ExportTables.vbs
-'* Purpose    : µ¼³ö±íµ½Excle
-'* Title      : µ¼³ö±í
-'* Category   : µ¼³öÄ£ĞÍ
+'* Purpose    : å¯¼å‡ºè¡¨åˆ°Excle
+'* Title      : å¯¼å‡ºè¡¨
+'* Category   : å¯¼å‡ºæ¨¡å‹
 '* Version    : v1.3
 '* Company    : www.duanzhihui.com
-'* Author     : ¶ÎÖÇ»Û
-'* Description: µ¼³ö±íµ½Excle
-'* History    : 2017-06-05  v1.0    ¶ÎÖÇ»Û  ĞÂÔö½Å±¾¡£
-'*              2017-06-07  v1.1    ¶ÎÖÇ»Û  ½Å±¾µ÷ÓÅ£¬¼õÉÙ¹ı³Ìµ÷ÓÃÓë¹ı³ÌÇĞ»»¡£
-'*              2017-06-08  v1.2    ¶ÎÖÇ»Û  ½Å±¾µ÷ÓÅ£¬²ÉÓÃ array ¼õÉÙ powerdesigner Óë excle µÄ·ÃÎÊ¡£
-'*              2017-06-09  v1.3    ¶ÎÖÇ»Û  ½Å±¾µ÷ÓÅ£¬½â¾ö large array ÎŞ·¨Ğ´ÈëexcleÎÊÌâ¡£
+'* Author     : æ®µæ™ºæ…§
+'* Description: å¯¼å‡ºè¡¨åˆ°Excle
+'* History    : 2017-06-05  v1.0    æ®µæ™ºæ…§  æ–°å¢è„šæœ¬ã€‚
+'*              2017-06-07  v1.1    æ®µæ™ºæ…§  è„šæœ¬è°ƒä¼˜ï¼Œå‡å°‘è¿‡ç¨‹è°ƒç”¨ä¸è¿‡ç¨‹åˆ‡æ¢ã€‚
+'*              2017-06-08  v1.2    æ®µæ™ºæ…§  è„šæœ¬è°ƒä¼˜ï¼Œé‡‡ç”¨ array å‡å°‘ powerdesigner ä¸ excle çš„è®¿é—®ã€‚
+'*              2017-06-09  v1.3    æ®µæ™ºæ…§  è„šæœ¬è°ƒä¼˜ï¼Œè§£å†³ large array æ— æ³•å†™å…¥excleé—®é¢˜ã€‚
 '******************************************************************************
 Option Explicit
 
@@ -34,8 +34,8 @@ If RQ = vbYes Then
     tplt = ws.CurrentDirectory + "\PdPDM_ExportTables_Template.xlsx"
     path = ws.CurrentDirectory + "\PdPDM_ExportTables_xxx.xlsx"
 
-    path = InputBox ("ÇëÊäÈë°üº¬Ä£ĞÍµÄExcelÎÄ¼şÂ·¾¶¡£", "ÎÄ¼şÂ·¾¶", path)
-    output "ExcelÎÄ¼şÂ·¾¶Îª: " + path
+    path = InputBox ("è¯·è¾“å…¥åŒ…å«æ¨¡å‹çš„Excelæ–‡ä»¶è·¯å¾„ã€‚", "æ–‡ä»¶è·¯å¾„", path)
+    output "Excelæ–‡ä»¶è·¯å¾„ä¸º: " + path
 
     CreateObject("Scripting.FileSystemObject").CopyFile tplt, path, true
 

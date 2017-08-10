@@ -3,7 +3,7 @@
 '* Purpose    : 从excel导入表
 '* Title      : 导入表
 '* Category   : 导入模型
-'* Version    : v2.1
+'* Version    : v2.2
 '* Company    : www.duanzhihui.com
 '* Author     : 段智慧
 '* Description: 从excel导入表
@@ -12,12 +12,12 @@
 '*                  R 只读  直接忽略。
 '*                  U 更新  如果表存在则更新，否则新增；如果字段存在则更新，否则新增。
 '*                  D 删除  删除表。
-'* History    :
-'*              2016-03-09  v1.3    段智慧 增加字段默认“Comment”
+'* History    : 2016-03-09  v1.3    段智慧 增加字段默认“Comment”
 '*              2016-04-09  v1.4    段智慧 增加表“Description”，修改表和字段“Comment”
 '*              2017-04-10  v1.5    段智慧 增加过程“SetPrimaryKey”
 '*              2017-05-10  v2.0    段智慧 增加表“Description、Annotation”
 '*              2017-06-14  v2.1    段智慧 修改“Comment”取法是的import与export数据一致。
+'*              2017-06-15  v2.2    段智慧 查找不区分大小写，增加 table.parent 修改。
 '******************************************************************************
 Option Explicit
 
@@ -44,7 +44,7 @@ If RQ = vbYes Then
     output "Excel文件路径为: " + path
 
     exl.Workbooks.Open path
-    exl.Workbooks(1).Worksheets(1).Activate    '指定要打开的sheet名称
+    exl.Workbooks(1).Worksheets(1).Activate
 Else
     HaveExcel = False
 End If
@@ -56,7 +56,7 @@ row = 2
 With exl.Workbooks(1).Worksheets(1)
     do While .Cells(row, 1).Value <> ""                     '退出
 
-        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package)
+        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package, "", nothing, False)
         if par is nothing then
             set par = mdl
         end if
@@ -86,7 +86,7 @@ exl.Workbooks(1).Close True
 sub CreateTable(par, exl, row)
     dim tbl
     With exl.Workbooks(1).Worksheets(1)
-        set tbl = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table)
+        set tbl = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table, "", nothing, False)
         if not tbl is nothing then
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 表存在，忽略表。"
         Else
@@ -100,18 +100,25 @@ sub CreateTable(par, exl, row)
             End if
             tbl.Description = .Cells(row, 6).Value      '指定 描述
             tbl.Annotation = .Cells(row, 7).Value       '指定 备注
-            tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User)
+            tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User, "", nothing, False)
         end if
         CreateColumns par, exl, CLng(.Cells(row, 9).Value)
         SetPrimaryKey tbl
     End With
 End sub
 
+
 sub UpdateTable(par, exl, row)
     dim tbl
     With exl.Workbooks(1).Worksheets(1)
-        set tbl = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table)
+        set tbl = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table, "", nothing, False)
         if not tbl is nothing then
+            if not tbl.parent is par then
+                Dim sel
+                Set sel = ActiveModel.CreateSelection
+                sel.Objects.Add(tbl)
+                sel.MoveToPackage(par)
+            end if
             tbl.Name = .Cells(row, 3).Value             '指定 表名称
            'tbl.Code = .Cells(row, 4).Value             '指定 表编码
             if .Cells(row, 5).Value = "" then           '指定 注释
@@ -121,7 +128,7 @@ sub UpdateTable(par, exl, row)
             End if
             tbl.Description = .Cells(row, 6).Value      '指定 描述
             tbl.Annotation = .Cells(row, 7).Value       '指定 备注
-            tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User)
+            tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User, "", nothing, False)
         Else
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 表不存在，新增表。"
             CreateTable par, exl, row
@@ -134,7 +141,7 @@ End sub
 sub DeleteTable(par, exl, row)
     dim tbl
     With exl.Workbooks(1).Worksheets(1)
-        set tbl = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table)
+        set tbl = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Table, "", nothing, False)
         if not tbl is nothing then
             tbl.Delete
         end if
@@ -144,7 +151,7 @@ End sub
 sub CreateColumns(par, exl, row)
     dim tbl, col
     With exl.Workbooks(1).Worksheets(2)
-        set tbl = par.FindChildByCode(.Cells(row, 3).Value, PdPDM.cls_Table)
+        set tbl = par.FindChildByCode(.Cells(row, 3).Value, PdPDM.cls_Table, "", nothing, False)
         if tbl.Columns.Count = 0 then
             do
                 CreateColumn exl, row, tbl, -1
@@ -160,15 +167,15 @@ sub UpdateColumns(par, exl, row)
     dim tbl, col, idx
     idx = 0
     With exl.Workbooks(1).Worksheets(2)
-        set tbl = par.FindChildByCode(.Cells(row, 3).Value, PdPDM.cls_Table)
+        set tbl = par.FindChildByCode(.Cells(row, 3).Value, PdPDM.cls_Table, "", nothing, False)
         if tbl.Columns.Count = 0 then
             output "|__"+CStr(.Cells(row, 2).Value) + "(" + CStr(.Cells(row, 3).Value) +") 表字段不存在，新增字段。"
             CreateColumns par, exl, row
         Else
             do
-                set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)
+                set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)
                 if col is Nothing Then                      'V1.2   Code 找不到，找 Name。
-                    set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column)
+                    set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)
                 end if
                 if not col is nothing then
                     UpdateColumn exl, row, tbl, col, idx

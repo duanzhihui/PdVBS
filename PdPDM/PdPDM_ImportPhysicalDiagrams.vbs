@@ -87,7 +87,7 @@ sub CreatePhysicalDiagram(par, exl, row)
     With exl.Workbooks(1).Worksheets(1)
         set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram)
         if not dgrm is nothing then
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") PhysicalDiagram存在，忽略PhysicalDiagram。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") PhysicalDiagram存在，忽略PhysicalDiagram。"
         Else
             set dgrm = par.PhysicalDiagrams.CreateNew    '创建 PhysicalDiagram
             dgrm.Name = .Cells(row, 3).Value            '指定 PhysicalDiagram名称
@@ -106,7 +106,7 @@ sub UpdatePhysicalDiagram(par, exl, row)
            'dgrm.Code = .Cells(row, 4).Value            '指定 PhysicalDiagram编码
             dgrm.Comment = .Cells(row, 5).Value         '指定 PhysicalDiagram注释
         Else
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") PhysicalDiagram不存在，新增PhysicalDiagram。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") PhysicalDiagram不存在，新增PhysicalDiagram。"
             CreatePhysicalDiagram par, exl, row
         end if
     End With

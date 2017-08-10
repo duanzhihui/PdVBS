@@ -1,14 +1,14 @@
 '******************************************************************************
 '* File       : PdPDM_AutoAttach.vbs
-'* Purpose    : ×Ô¶¯¸½¼Ó±í¡¢¹ØÏµµ½ÎïÀíÊÓÍ¼
-'* Title      : ×Ô¶¯¸½¼Ó±í¡¢¹ØÏµµ½ÎïÀíÊÓÍ¼
-'* Category   : ×Ô¶¯¸½¼Ó
+'* Purpose    : è‡ªåŠ¨é™„åŠ è¡¨ã€å…³ç³»åˆ°ç‰©ç†è§†å›¾
+'* Title      : è‡ªåŠ¨é™„åŠ è¡¨ã€å…³ç³»åˆ°ç‰©ç†è§†å›¾
+'* Category   : è‡ªåŠ¨é™„åŠ 
 '* Version    : v1.0
 '* Company    : www.duanzhihui.com
-'* Author     : ¶ÎÖÇ»Û
-'* Description: Ç°ÖÃÈÎÎñ PdPDM_AttachTables.vbs
+'* Author     : æ®µæ™ºæ…§
+'* Description: å‰ç½®ä»»åŠ¡ PdPDM_AttachTables.vbs
 '* History    :
-'*              2016-03-09  v1.0    ¶ÎÖÇ»Û Ôö¼Ó
+'*              2016-03-09  v1.0    æ®µæ™ºæ…§ å¢åŠ 
 '******************************************************************************
 Option Explicit
 
@@ -31,13 +31,13 @@ sub AutoAttach(par)
                 if tbl.IsShortcut then
                     set tbl = tbl.TargetObject
                 end if
-                output "©»©¥"+cstr(tbl)
+                output "|__"+cstr(tbl)
                 For Each ref in tbl.OutReferences
                     if tbl = ref.ChildTable Then
                         set sym1 = dgrm.FindSymbol(ref.ParentTable, true)
                         if not sym1 is nothing Then
                             if dgrm.FindSymbol(ref, true) is nothing Then
-                                output "    ©»©¥"+Cstr(ref)
+                                output "    |__"+Cstr(ref)
                                 dgrm.AttachLinkObject ref, sym2, sym1
                             end if
                         end if

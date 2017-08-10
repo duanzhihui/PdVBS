@@ -82,7 +82,7 @@ sub CreatePackage(par, exl, row)
     With exl.Workbooks(1).Worksheets(1)
         set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package)
         if not pkg is nothing then
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") Package存在，忽略Package。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") Package存在，忽略Package。"
         Else
             set pkg = par.Packages.CreateNew            '创建 Package
             pkg.Name = .Cells(row, 3).Value             '指定 Package名称
@@ -105,7 +105,7 @@ sub UpdatePackage(par, exl, row)
             pkg.DefaultDiagram.Name =  pkg.Name         '指定 DefaultDiagram名称
             pkg.DefaultDiagram.Code =  pkg.Code         '指定 DefaultDiagram编码
         Else
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") Package不存在，新增Package。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") Package不存在，新增Package。"
             CreatePackage par, exl, row
         end if
     End With

@@ -1,19 +1,19 @@
 '******************************************************************************
 '* File       : PdPDM_ImportReferences.vbs
 '* Purpose    : 从Sheet中导入关系
-'* Title      :
-'* Category   :
-'* Version    : 1.0
-'* Company    :
+'* Title      : 导入关系
+'* Category   : 导入
+'* Version    : v1.1
+'* Company    : www.duanzhihui.com
 '* Author     : 段智慧
-'* Description:
+'* Description: 从Sheet中导入关系
 '*              CRUD
 '*                  C 新增  如果关系存在则忽略，否则新增；如果连接存在则忽略，否则新增。
 '*                  R 只读  直接忽略。
 '*                  U 更新  如果关系存在则更新，否则新增；如果连接存在则删除后新增，否则新增。
 '*                  D 删除  删除关系。
-'* History    :
-'*              2016-04-07  v1.0    段智慧  新增
+'* History    : 2016-04-07  v1.0    段智慧  新增
+'*              2017-06-20  v1.1    段智慧  opensource计划
 '******************************************************************************
 Option Explicit
 
@@ -51,9 +51,9 @@ dim par, obj1, obj2, ref, row, num
 
 row = 2
 With exl.Workbooks(1).Worksheets(1)
-    do While .Cells(row, 1).Value <> ""                                                     '退出
-        set obj1 = ActiveModel.FindChildByCode(.Cells(row, 6).Value, PdPDM.cls_Table)       '指定 主表
-        set obj2 = ActiveModel.FindChildByCode(.Cells(row, 7).Value, PdPDM.cls_Table)       '指定 从表
+    do While .Cells(row, 1).Value <> ""                                                                         '退出
+        set obj1 = ActiveModel.FindChildByCode(.Cells(row, 6).Value, PdPDM.cls_Table, "", nothing, False)       '指定 主表
+        set obj2 = ActiveModel.FindChildByCode(.Cells(row, 7).Value, PdPDM.cls_Table, "", nothing, False)       '指定 从表
         set par = obj2.Parent
         if par is nothing or obj1 is nothing or obj2 is nothing then
             output "第" + CStr(row) + "行，WARNING【无对象】：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
@@ -82,7 +82,6 @@ With exl.Workbooks(1).Worksheets(1)
             case Else
                 output "第" + CStr(row) + "行，忽略关系：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
             end select
-
             exl.Range("A"+Cstr(row)).Value = "R"
         end if
         row = row + 1
@@ -94,9 +93,9 @@ exl.Workbooks(1).Close True
 sub CreateReference(par, obj1, obj2, exl, row)
     dim ref
     With exl.Workbooks(1).Worksheets(1)
-        set ref = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference)
+        set ref = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference, "", nothing, False)
         if not ref is nothing then
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 关系存在，忽略关系。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 关系存在，忽略关系。"
         Else
             set ref = par.References.CreateNew          '创建 关系
             ref.Name = .Cells(row, 3).Value             '指定 关系名称
@@ -112,7 +111,7 @@ End sub
 sub UpdateReference(par, obj1, obj2, exl, row)
     dim ref
     With exl.Workbooks(1).Worksheets(1)
-        set ref = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference)
+        set ref = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference, "", nothing, False)
         if not ref is nothing then
             ref.Name = .Cells(row, 3).Value             '指定 关系名称
            'ref.Code = .Cells(row, 4).Value             '指定 关系编码
@@ -121,7 +120,7 @@ sub UpdateReference(par, obj1, obj2, exl, row)
             set ref.ChildTable = obj2                   '指定 关系从表
             UpdateJoins par, ref, exl, CInt(.Cells(row, 11).Value)              '指定 关系连接
         Else
-            output "┗━"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 关系不存在，新增关系。"
+            output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 关系不存在，新增关系。"
             CreateReference par, obj1, obj2, exl, row
         end if
     End With
@@ -130,7 +129,7 @@ End sub
 sub DeleteReference(par, exl, row)
     dim ref
     With exl.Workbooks(1).Worksheets(1)
-        set ref = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference)
+        set ref = mdl.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Reference, "", nothing, False)
         if not ref is nothing then
             ref.Delete
         end if
@@ -146,7 +145,7 @@ sub CreateJoins(par, ref, exl, row)
                 row = row + 1
             loop while .Cells(row, 3).Value = .Cells(row - 1, 3).Value
         Else
-            output "┗━"+CStr(.Cells(row, 2).Value) + "(" + CStr(.Cells(row, 3).Value) +") 关系连接存在，修改连接。"
+            output "|__"+CStr(.Cells(row, 2).Value) + "(" + CStr(.Cells(row, 3).Value) +") 关系连接存在，修改连接。"
             UpdateJoins par, ref, exl, row
         end if
     End With
@@ -156,7 +155,7 @@ sub UpdateJoins(par, ref, exl, row)
     dim jn, idx
     With exl.Workbooks(1).Worksheets(2)
         if ref.Joins.Count = 0 then
-            output "┗━"+CStr(.Cells(row, 2).Value) + "(" + CStr(.Cells(row, 3).Value) +") 关系连接不存在，新增连接。"
+            output "|__"+CStr(.Cells(row, 2).Value) + "(" + CStr(.Cells(row, 3).Value) +") 关系连接不存在，新增连接。"
             CreateJoins par, ref, exl, row
         Else
             do
@@ -176,25 +175,25 @@ End sub
 sub CreateJoin(exl, row, ref, idx)
     dim jn
     With exl.Workbooks(1).Worksheets(2)
-        set jn = ref.Joins.CreateNewAt(idx)                                                                     '创建 连接
-        set jn.ParentTableColumn = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column)      '指定 连接父字段
-        set jn.ChildTableColumn  = ref.ChildTable.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)       '指定 连接子字段
+        set jn = ref.Joins.CreateNewAt(idx)                                                                                         '创建 连接
+        set jn.ParentTableColumn = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)      '指定 连接父字段
+        set jn.ChildTableColumn  = ref.ChildTable.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)       '指定 连接子字段
     End With
 End sub
 
 sub UpdateJoin(exl, row, ref, idx)
     dim jn
     With exl.Workbooks(1).Worksheets(2)
-        set jn = ref.Joins.Item(idx)                                                                            '获取 连接
-       'set jn.ParentTableColumn = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column)      '指定 连接父字段
-        set jn.ChildTableColumn  = ref.ChildTable.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)       '指定 连接子字段
+        set jn = ref.Joins.Item(idx)                                                                                                '获取 连接
+       'set jn.ParentTableColumn = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)      '指定 连接父字段
+        set jn.ChildTableColumn  = ref.ChildTable.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)       '指定 连接子字段
     End With
 End sub
 
 Function FindJoin(exl, row, ref)
     dim jn, ptc, idx
     With exl.Workbooks(1).Worksheets(2)
-        set ptc = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column)                       '获取 连接父字段
+        set ptc = ref.ParentTable.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)                       '获取 连接父字段
         idx = 0
         FindJoin = -1
         do while idx < ref.Joins.Count
