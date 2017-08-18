@@ -3,7 +3,7 @@
 '* Purpose    : 从excel导入表
 '* Title      : 导入表
 '* Category   : 导入模型
-'* Version    : v2.2
+'* Version    : v2.3
 '* Company    : www.duanzhihui.com
 '* Author     : 段智慧
 '* Description: 从excel导入表
@@ -18,6 +18,7 @@
 '*              2017-05-10  v2.0    段智慧 增加表“Description、Annotation”
 '*              2017-06-14  v2.1    段智慧 修改“Comment”取法是的import与export数据一致。
 '*              2017-06-15  v2.2    段智慧 查找不区分大小写，增加 table.parent 修改。
+'*              2017-08-18  v2.3    段智慧 修改 CBoolean ，解决TRUE、FALSE当成字符串处理，默认输出FALSE问题。
 '******************************************************************************
 Option Explicit
 
@@ -258,6 +259,10 @@ Function CBoolean(exp)
     case "TRUE"
         CBoolean = TRUE
     case "FALSE"
+        CBoolean = FALSE
+    case TRUE
+        CBoolean = TRUE
+    case FALSE
         CBoolean = FALSE
     case "是"
         CBoolean = TRUE

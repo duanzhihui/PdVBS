@@ -3,7 +3,7 @@
 '* Purpose    : 从excel导入表配置
 '* Title      : 配置表
 '* Category   : 导入模型
-'* Version    : v2.0
+'* Version    : v2.1
 '* Company    : www.duanzhihui.com
 '* Author     : 段智慧
 '* Description: 配置表物理选项和默认字段
@@ -15,6 +15,7 @@
 '* History    :
 '*              2016-03-31  v1.0    段智慧  新增 默认字段配置。
 '*              2016-07-08  v2.0    段智慧  增加 物理选项配置；支持通配符 * 。
+'*              2017-08-18  v2.1    段智慧 修改 CBoolean ，解决TRUE、FALSE当成字符串处理，默认输出FALSE问题。
 '******************************************************************************
 Option Explicit
 
@@ -231,6 +232,10 @@ Function CBoolean(exp)
         CBoolean = TRUE
     case "FALSE"
         CBoolean = FALSE
+    case TRUE
+        CBoolean = TRUE
+    case FALSE
+        CBoolean = FALSE        
     case "是"
         CBoolean = TRUE
     case "否"
