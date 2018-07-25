@@ -3,7 +3,7 @@
 '* Purpose    : 从excel导入表配置
 '* Title      : 配置表
 '* Category   : 导入模型
-'* Version    : v2.1
+'* Version    : v2.0
 '* Company    : www.duanzhihui.com
 '* Author     : 段智慧
 '* Description: 配置表物理选项和默认字段
@@ -15,7 +15,6 @@
 '* History    :
 '*              2016-03-31  v1.0    段智慧  新增 默认字段配置。
 '*              2016-07-08  v2.0    段智慧  增加 物理选项配置；支持通配符 * 。
-'*              2017-08-18  v2.1    段智慧 修改 CBoolean ，解决TRUE、FALSE当成字符串处理，默认输出FALSE问题。
 '******************************************************************************
 Option Explicit
 
@@ -58,7 +57,7 @@ With exl.Workbooks(1).Worksheets(1)
         stblcode = CStr(.Cells(row, 4).Value)
         typ = CStr(.Cells(row, 5).Value)
 
-        set par = mdl.FindChildByCode(spar, PdPDM.cls_Package)
+        set par = mdl.FindChildByCode(spar, PdPDM.cls_Package, "", nothing, False)
         if par is nothing then
             set par = mdl
         end if
@@ -74,7 +73,7 @@ With exl.Workbooks(1).Worksheets(1)
                 ConfigTable typ, par, exl, row, tbl
             Next
         Else
-            set tbl = par.FindChildByCode(stblcode, PdPDM.cls_Table)
+            set tbl = par.FindChildByCode(stblcode, PdPDM.cls_Table, "", nothing, False)
             if tbl is Nothing Then
                 output "第" + CStr(row) + "行，表不存在：" + stblname + "(" + stblcode +")。"
             Else
@@ -88,11 +87,11 @@ End With
 exl.Workbooks(1).Close False
 
 sub ConfigTable(typ, par, exl, row, tbl)
-    select case typ
-    case "DefaultColumns"
+    select case Ucase(typ)
+    case "DEFAULTCOLUMNS"
         output "第" + CStr(row) + "行，默认字段：" + tbl + "。"
         DefaultColumns par, exl, row, tbl
-    case "PhysicalOption"
+    case "PHYSICALOPTION"
         output "第" + CStr(row) + "行，物理选项：" + tbl + "。"
         PhysicalOption par, exl, row, tbl
     case Else
@@ -103,7 +102,7 @@ End sub
 sub DefaultColumns(par, exl, row, tbl)
     dim col
     With exl.Workbooks(1).Worksheets(1)
-        select case .Cells(row, 1).Value
+        select case Ucase(.Cells(row, 1).Value)
         case "C"
             output "|__新增默认字段"
             CreateDefaultColumns par, exl, tbl, CLng(.Cells(row, 9).Value)
@@ -126,9 +125,9 @@ sub CreateDefaultColumns(par, exl, tbl, row)
     idx = tbl.Columns.Count
     With exl.Workbooks(1).Worksheets(2)
         do
-            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)
+            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)
             if col is Nothing Then
-                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column)
+                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)
             end if
             if col is nothing then
                 CreateColumn exl, row, tbl, idx
@@ -144,9 +143,9 @@ sub UpdateDefaultColumns(par, exl, tbl, row)
     idx = tbl.Columns.Count
     With exl.Workbooks(1).Worksheets(2)
         do
-            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)
+            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)
             if col is Nothing Then
-                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column)
+                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)
             end if
             if col is nothing then
                 CreateColumn exl, row, tbl, idx
@@ -163,9 +162,9 @@ sub DeleteDefaultColumns(par, exl, tbl, row)
     dim col
     With exl.Workbooks(1).Worksheets(2)
         do
-            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column)
+            set col = tbl.FindChildByCode(.Cells(row, 5).Value, PdPDM.cls_Column, "", nothing, False)
             if col is Nothing Then
-                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column)
+                set col = tbl.FindChildByName(.Cells(row, 4).Value, PdPDM.cls_Column, "", nothing, False)
             end if
             if not col is nothing then
                 tbl.Columns.Remove col, True
@@ -227,38 +226,23 @@ End sub
 
 '   CBoolean    与 PdPDM_ImportTables.vbs 保持一致
 Function CBoolean(exp)
-    select case exp
-    case "TRUE"
+    select case Ucase(exp)
+    case "TRUE", "是", "1", "Y", TRUE
         CBoolean = TRUE
-    case "FALSE"
-        CBoolean = FALSE
-    case TRUE
-        CBoolean = TRUE
-    case FALSE
-        CBoolean = FALSE        
-    case "是"
-        CBoolean = TRUE
-    case "否"
-        CBoolean = FALSE
-    case "1"
-        CBoolean = TRUE
-    case "0"
-        CBoolean = FALSE
-    case "Y"
-        CBoolean = TRUE
-    case "N"
+    case "FALSE", "否", "0", "N", FALSE
         CBoolean = FALSE
     case Else
         CBoolean = FALSE
     end select
 End Function
 
+
 sub PhysicalOption(par, exl, row, tbl)
     dim col, path, value
     With exl.Workbooks(1).Worksheets(1)
         path = CStr(.Cells(row, 7).Value)
         value = CStr(.Cells(row, 8).Value)
-        select case .Cells(row, 1).Value
+        select case Ucase(.Cells(row, 1).Value)
         case "C"
             output "|__新增物理选项"
             tbl.AddPhysicalOption(path)

@@ -67,7 +67,7 @@ With exl.Workbooks(1).Worksheets(1)
             exl.Range("B"+Cstr(row)).Value = par.Code
             exl.Range("C"+Cstr(row)).Value = "外键_" + obj2.Name + "-" + obj1.Name + num
 
-            select case .Cells(row, 1).Value
+            select case UCase(.Cells(row, 1).Value)
             case "C"
                 output "第" + CStr(row) + "行，新增关系：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
                 CreateReference par, obj1, obj2, exl, row
@@ -82,7 +82,7 @@ With exl.Workbooks(1).Worksheets(1)
             case Else
                 output "第" + CStr(row) + "行，忽略关系：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
             end select
-            exl.Range("A"+Cstr(row)).Value = "R"
+           'exl.Range("A"+Cstr(row)).Value = "R"            '将 CRUD 设为默认值 R
         end if
         row = row + 1
     Loop

@@ -50,12 +50,12 @@ row = 2
 With exl.Workbooks(1).Worksheets(1)
     do While .Cells(row, 1).Value <> ""                     '退出
 
-        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package)
+        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package, "", nothing, False)
         if par is nothing then
             set par = mdl
         end if
 
-        select case .Cells(row, 1).Value
+        select case Ucase(.Cells(row, 1).Value)
         case "C"
             output "第" + CStr(row) + "行，新增Package：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
             CreatePackage par, exl, row
@@ -70,7 +70,7 @@ With exl.Workbooks(1).Worksheets(1)
         case Else
             output "第" + CStr(row) + "行，忽略Package：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
         end select
-        exl.Range("A"+Cstr(row)).Value = "R"
+       'exl.Range("A"+Cstr(row)).Value = "R"                '将 CRUD 设为默认值 R
         row = row + 1
     Loop
 End With
@@ -80,7 +80,7 @@ exl.Workbooks(1).Close True
 sub CreatePackage(par, exl, row)
     dim pkg
     With exl.Workbooks(1).Worksheets(1)
-        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package)
+        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package, "", nothing, False)
         if not pkg is nothing then
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") Package存在，忽略Package。"
         Else
@@ -97,7 +97,7 @@ End sub
 sub UpdatePackage(par, exl, row)
     dim pkg
     With exl.Workbooks(1).Worksheets(1)
-        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package)
+        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package, "", nothing, False)
         if not pkg is nothing then
             pkg.Name = .Cells(row, 3).Value             '指定 Package名称
            'pkg.Code = .Cells(row, 4).Value             '指定 Package编码
@@ -114,7 +114,7 @@ End sub
 sub DeletePackage(par, exl, row)
     dim pkg
     With exl.Workbooks(1).Worksheets(1)
-        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package)
+        set pkg = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_Package, "", nothing, False)
         if not pkg is nothing then
             pkg.Delete
         end if

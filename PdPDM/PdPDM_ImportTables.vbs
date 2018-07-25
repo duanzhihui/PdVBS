@@ -18,7 +18,7 @@
 '*              2017-05-10  v2.0    段智慧 增加表“Description、Annotation”
 '*              2017-06-14  v2.1    段智慧 修改“Comment”取法是的import与export数据一致。
 '*              2017-06-15  v2.2    段智慧 查找不区分大小写，增加 table.parent 修改。
-'*              2017-08-18  v2.3    段智慧 修改 CBoolean ，解决TRUE、FALSE当成字符串处理，默认输出FALSE问题。
+'*              2018-01-05  v2.3    段智慧 解决 select case 大小写问题。
 '******************************************************************************
 Option Explicit
 
@@ -51,7 +51,7 @@ Else
 End If
 
 dim par, tbl, row
-on error Resume Next
+'on error Resume Next
 
 row = 2
 With exl.Workbooks(1).Worksheets(1)
@@ -62,7 +62,7 @@ With exl.Workbooks(1).Worksheets(1)
             set par = mdl
         end if
 
-        select case .Cells(row, 1).Value
+        select case Ucase(.Cells(row, 1).Value)
         case "C"
             output "第" + CStr(row) + "行，新增表：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
             CreateTable par, exl, row
@@ -77,7 +77,7 @@ With exl.Workbooks(1).Worksheets(1)
         case Else
             output "第" + CStr(row) + "行，忽略表：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
         end select
-        exl.Range("A"+Cstr(row)).Value = "R"
+       'exl.Range("A"+Cstr(row)).Value = "R"                '将 CRUD 设为默认值 R
         row = row + 1
     Loop
 End With
@@ -91,16 +91,16 @@ sub CreateTable(par, exl, row)
         if not tbl is nothing then
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 表存在，忽略表。"
         Else
-            set tbl = par.Tables.CreateNew              '创建 表
-            tbl.Name = .Cells(row, 3).Value             '指定 表名称
-            tbl.Code = .Cells(row, 4).Value             '指定 表编码
-            if .Cells(row, 5).Value = "" then           '指定 注释
+            set tbl = par.Tables.CreateNew                                      '创建 表
+            tbl.Name = .Cells(row, 3).Value                                     '指定 表名称
+            tbl.Code = .Cells(row, 4).Value                                     '指定 表编码
+            if .Cells(row, 5).Value = "" and tbl.Name <> tbl.Code then          '指定 注释
                 tbl.Comment = tbl.Name
             Else
                 tbl.Comment = .Cells(row, 5).Value
             End if
-            tbl.Description = .Cells(row, 6).Value      '指定 描述
-            tbl.Annotation = .Cells(row, 7).Value       '指定 备注
+            tbl.Description = .Cells(row, 6).Value                              '指定 描述
+            tbl.Annotation = .Cells(row, 7).Value                               '指定 备注
             tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User, "", nothing, False)
         end if
         CreateColumns par, exl, CLng(.Cells(row, 9).Value)
@@ -120,22 +120,22 @@ sub UpdateTable(par, exl, row)
                 sel.Objects.Add(tbl)
                 sel.MoveToPackage(par)
             end if
-            tbl.Name = .Cells(row, 3).Value             '指定 表名称
-           'tbl.Code = .Cells(row, 4).Value             '指定 表编码
-            if .Cells(row, 5).Value = "" then           '指定 注释
+            tbl.Name = .Cells(row, 3).Value                                     '指定 表名称
+           'tbl.Code = .Cells(row, 4).Value                                     '指定 表编码
+            if .Cells(row, 5).Value = "" and tbl.Name <> tbl.Code then          '指定 注释
                 tbl.Comment = tbl.Name
             Else
                 tbl.Comment = .Cells(row, 5).Value
             End if
-            tbl.Description = .Cells(row, 6).Value      '指定 描述
-            tbl.Annotation = .Cells(row, 7).Value       '指定 备注
+            tbl.Description = .Cells(row, 6).Value                              '指定 描述
+            tbl.Annotation = .Cells(row, 7).Value                               '指定 备注
             tbl.Owner = mdl.FindChildByCode(.Cells(row, 8).Value, PdPDM.cls_User, "", nothing, False)
         Else
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") 表不存在，新增表。"
             CreateTable par, exl, row
         end if
         UpdateColumns par, exl, CLng(.Cells(row, 9).Value)
-        SetPrimaryKey tbl
+       'SetPrimaryKey tbl
     End With
 End sub
 
@@ -206,7 +206,7 @@ sub CreateColumn(exl, row, tbl, idx)
         if not col.Primary Then
           col.Mandatory = CBoolean(.Cells(row, 8).Value)                        '指定 强制
         end if
-        if col.Comment = "" Then                                                '指定 注释
+        if .Cells(row, 9).Value = "" and col.name <> col.code Then              '指定 注释
             col.Comment = col.Name
         else
             col.Comment = .Cells(row, 9).Value
@@ -226,7 +226,7 @@ sub UpdateColumn(exl, row, tbl, col, idx)
         if not col.Primary Then
           col.Mandatory = CBoolean(.Cells(row, 8).Value)                        '指定 强制
         end if
-        if col.Comment = "" Then                                                '指定 注释
+        if .Cells(row, 9).Value = "" and col.name <> col.code Then              '指定 注释
             col.Comment = col.Name
         else
             col.Comment = .Cells(row, 9).Value
@@ -255,26 +255,10 @@ sub SetPrimaryKey(tbl)
 End sub
 
 Function CBoolean(exp)
-    select case exp
-    case "TRUE"
+    select case Ucase(exp)
+    case "TRUE", "是", "1", "Y", TRUE
         CBoolean = TRUE
-    case "FALSE"
-        CBoolean = FALSE
-    case TRUE
-        CBoolean = TRUE
-    case FALSE
-        CBoolean = FALSE
-    case "是"
-        CBoolean = TRUE
-    case "否"
-        CBoolean = FALSE
-    case "1"
-        CBoolean = TRUE
-    case "0"
-        CBoolean = FALSE
-    case "Y"
-        CBoolean = TRUE
-    case "N"
+    case "FALSE", "否", "0", "N", FALSE
         CBoolean = FALSE
     case Else
         CBoolean = FALSE

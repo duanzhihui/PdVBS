@@ -55,12 +55,12 @@ row = 2
 With exl.Workbooks(1).Worksheets(1)
     do While .Cells(row, 1).Value <> ""                     '退出
 
-        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package)
+        set par = mdl.FindChildByCode(CStr(.Cells(row, 2).Value), PdPDM.cls_Package, "", nothing, False)
         if par is nothing then
             set par = mdl
         end if
 
-        select case .Cells(row, 1).Value
+        select case Ucase(.Cells(row, 1).Value)
         case "C"
             output "第" + CStr(row) + "行，新增PhysicalDiagram：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
             CreatePhysicalDiagram par, exl, row
@@ -75,7 +75,7 @@ With exl.Workbooks(1).Worksheets(1)
         case Else
             output "第" + CStr(row) + "行，忽略PhysicalDiagram：" + CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +")。"
         end select
-        exl.Range("A"+Cstr(row)).Value = "R"
+       'exl.Range("A"+Cstr(row)).Value = "R"                '将 CRUD 设为默认值 R
         row = row + 1
     Loop
 End With
@@ -85,7 +85,7 @@ exl.Workbooks(1).Close True
 sub CreatePhysicalDiagram(par, exl, row)
     dim dgrm
     With exl.Workbooks(1).Worksheets(1)
-        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram)
+        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram, "", nothing, False)
         if not dgrm is nothing then
             output "|__"+CStr(.Cells(row, 3).Value) + "(" + CStr(.Cells(row, 4).Value) +") PhysicalDiagram存在，忽略PhysicalDiagram。"
         Else
@@ -100,7 +100,7 @@ End sub
 sub UpdatePhysicalDiagram(par, exl, row)
     dim dgrm
     With exl.Workbooks(1).Worksheets(1)
-        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram)
+        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram, "", nothing, False)
         if not dgrm is nothing then
             dgrm.Name = .Cells(row, 3).Value            '指定 PhysicalDiagram名称
            'dgrm.Code = .Cells(row, 4).Value            '指定 PhysicalDiagram编码
@@ -115,7 +115,7 @@ End sub
 sub DeletePhysicalDiagram(par, exl, row)
     dim dgrm
     With exl.Workbooks(1).Worksheets(1)
-        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram)
+        set dgrm = par.FindChildByCode(.Cells(row, 4).Value, PdPDM.cls_PhysicalDiagram, "", nothing, False)
         if not dgrm is nothing then
             dgrm.Delete
         end if
